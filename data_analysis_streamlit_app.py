@@ -5,7 +5,6 @@ import streamlit as st
 # Load environment variables from .env
 #load_dotenv()
 
-st.secrets["mongo"]["uri"]
 # Retrieve the API key from the environment variable
 #deepseek_api_key = os.getenv("DEEPSEEK_API_KEY")
 #langchain_key = os.getenv("LANGCHAIN_API_KEY")
