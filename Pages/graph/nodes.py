@@ -4,7 +4,7 @@ from langchain_core.prompts import ChatPromptTemplate
 from .state import AgentState
 import json
 from typing import Literal
-from .tools import complete_plot_python_task, complete_python_task_no_plots
+from .tools import complete_python_task
 from langgraph.prebuilt import ToolInvocation, ToolExecutor
 import os
 
@@ -20,7 +20,7 @@ llm = ChatDeepSeek(
     # other params...
 )
 
-tools = [complete_python_task_no_plots, complete_plot_python_task]
+tools = [complete_python_task]
 
 model = llm.bind_tools(tools)
 tool_executor = ToolExecutor(tools)
@@ -40,7 +40,6 @@ def create_data_summary(state: AgentState) -> str:
     for d in state["input_data"]:
         variables.append(d.variable_name)
         summary += f"\n\nVariable: {d.variable_name}\n"
-        summary += f"Description: {d.data_description}"
     
     if "current_variables" in state:
         remaining_variables = [v for v in state["current_variables"] if v not in variables]
