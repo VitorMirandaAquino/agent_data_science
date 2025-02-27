@@ -10,4 +10,3 @@ class AgentState(TypedDict):
     input_data: Annotated[List[InputData], operator.add]
     intermediate_outputs: Annotated[List[dict], operator.add]
     current_variables: dict
-    output_image_paths: Annotated[List[str], operator.add]

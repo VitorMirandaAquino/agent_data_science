@@ -40,7 +40,6 @@ def create_data_summary(state: AgentState) -> str:
     for d in state["input_data"]:
         variables.append(d.variable_name)
         summary += f"\n\nVariable: {d.variable_name}\n"
-        summary += f"Description: {d.data_description}"
     
     if "current_variables" in state:
         remaining_variables = [v for v in state["current_variables"] if v not in variables]
