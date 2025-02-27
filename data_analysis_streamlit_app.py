@@ -1,14 +1,16 @@
 import os
 import streamlit as st
-from dotenv import load_dotenv
+#from dotenv import load_dotenv
 
 # Load environment variables from .env
-load_dotenv()
+#load_dotenv()
 
+st.secrets["mongo"]["uri"]
 # Retrieve the API key from the environment variable
-deepseek_api_key = os.getenv("DEEPSEEK_API_KEY")
-langchain_key = os.getenv("LANGCHAIN_API_KEY")
-
+#deepseek_api_key = os.getenv("DEEPSEEK_API_KEY")
+#langchain_key = os.getenv("LANGCHAIN_API_KEY")
+deepseek_api_key = st.secrets["deepseek"]["key"]
+langchain_key = st.secrets["langchain"]["key"]
 # Check if the API key is set
 if deepseek_api_key is None and langchain_key is None:
     st.error("Error: DEEPSEEK_API_KEY environment variable not set.")
