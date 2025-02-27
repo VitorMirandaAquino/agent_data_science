@@ -1,8 +1,9 @@
-python-dotenv
-pandas
-streamlit
-langchain-core
-langchain
-langgraph
-langchain-deepseek
-langchain-experimental
+python-dotenv == 1.0.1
+pandas == 2.2.3
+numpy == 2.2.3
+streamlit == 1.42.2
+langchain-core == 0.3.40
+langchain == 0.3.19
+langgraph == 0.2.74
+langchain-deepseek == 0.1.2
+langchain-experimental == 0.3.4
