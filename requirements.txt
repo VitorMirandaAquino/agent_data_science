@@ -7,3 +7,4 @@ langchain == 0.3.19
 langgraph == 0.2.74
 langchain-deepseek == 0.1.2
 langchain-experimental == 0.3.4
+plotly == 5.19.0

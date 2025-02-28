@@ -1,10 +1,18 @@
 import os
 from pathlib import Path
+import shutil
 
 # Base paths
 BASE_DIR = Path(__file__).parent.parent
 UPLOADS_DIR = BASE_DIR / "uploads"
 PROMPTS_DIR = BASE_DIR / "Pages" / "prompts"
+FIGURES_DIR = BASE_DIR / "images" / "plotly_figures" / "pickle"
+
+# Clean up and recreate figures directory
+if FIGURES_DIR.exists():
+    shutil.rmtree(FIGURES_DIR)
+FIGURES_DIR.parent.mkdir(parents=True, exist_ok=True)
+FIGURES_DIR.mkdir(exist_ok=True)
 
 # Ensure required directories exist
 UPLOADS_DIR.mkdir(exist_ok=True)

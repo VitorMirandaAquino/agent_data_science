@@ -3,6 +3,9 @@ from langchain_core.messages import HumanMessage, AIMessage
 from Pages.backend import PythonChatbot, InputData
 from Pages.config import UPLOADS_DIR, CHAT_CONTAINER_HEIGHT
 from pathlib import Path
+import plotly.io as pio
+import pickle
+import os
 
 def render_chat_interface():
     """Render the chat interface tab content."""
@@ -13,13 +16,24 @@ def render_chat_interface():
         chat_container = st.container(height=CHAT_CONTAINER_HEIGHT)
         
         with chat_container:
-            # Display chat history
-            for msg in st.session_state.visualisation_chatbot.chat_history:
+            # Display chat history and plots
+            for msg_index, msg in enumerate(st.session_state.visualisation_chatbot.chat_history):
                 if isinstance(msg, HumanMessage):
                     st.chat_message("You").markdown(msg.content)
                 elif isinstance(msg, AIMessage):
                     if 'tool_calls' not in msg.additional_kwargs:
                         st.chat_message("AI").markdown(msg.content)
+                    
+                    # Check for and display any plots associated with this message
+                    if msg_index in st.session_state.visualisation_chatbot.output_image_paths:
+                        image_paths = st.session_state.visualisation_chatbot.output_image_paths[msg_index]
+                        for image_path in image_paths:
+                            try:
+                                with open(os.path.join("images/plotly_figures/pickle", image_path), "rb") as f:
+                                    fig = pickle.load(f)
+                                st.plotly_chart(fig, use_container_width=True)
+                            except Exception as e:
+                                st.error(f"Error displaying plot: {str(e)}")
         
         # Chat input
         st.chat_input(

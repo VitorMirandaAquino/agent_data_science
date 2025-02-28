@@ -11,6 +11,7 @@ class PythonChatbot:
         super().__init__()
         self.reset_chat()
         self.graph = self.create_graph()
+        self.last_viz_message_index = -1  # Track when last visualization was created
         
     def create_graph(self):
         workflow = StateGraph(AgentState)
@@ -24,16 +25,28 @@ class PythonChatbot:
         return workflow.compile()
     
     def user_sent_message(self, user_query, input_data: List[InputData]):
+        starting_image_paths_set = set(sum(self.output_image_paths.values(), []))
         input_state = {
             "messages": self.chat_history + [HumanMessage(content=user_query)],
             "input_data": input_data,
+            "output_image_paths": list(starting_image_paths_set),
+            "intermediate_outputs": [],
+            "current_variables": {}
         }
 
         result = self.graph.invoke(input_state, {"recursion_limit": 25})
         self.chat_history = result["messages"]
+        
+        new_image_paths = set(result.get("output_image_paths", [])) - starting_image_paths_set
+        if new_image_paths:
+            self.last_viz_message_index = len(self.chat_history) - 1
+            
+        self.output_image_paths[len(self.chat_history) - 1] = list(new_image_paths)
         if "intermediate_outputs" in result:
             self.intermediate_outputs.extend(result["intermediate_outputs"])
 
     def reset_chat(self):
         self.chat_history = []
         self.intermediate_outputs = []
+        self.output_image_paths = {}
+        self.last_viz_message_index = -1

@@ -4,7 +4,7 @@ from langchain_core.prompts import ChatPromptTemplate
 from .state import AgentState
 import json
 from typing import Literal
-from .tools import complete_python_task
+from .tools import complete_python_task, create_visualization
 from langgraph.prebuilt import ToolInvocation, ToolExecutor
 import os
 
@@ -20,7 +20,7 @@ llm = ChatDeepSeek(
     # other params...
 )
 
-tools = [complete_python_task]
+tools = [complete_python_task, create_visualization]
 
 model = llm.bind_tools(tools)
 tool_executor = ToolExecutor(tools)
