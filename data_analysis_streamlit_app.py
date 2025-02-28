@@ -1,37 +1,37 @@
 import os
 import streamlit as st
-#from dotenv import load_dotenv
+from Pages.config import STREAMLIT_CONFIG, MAX_UPLOAD_SIZE_MB
 
-# Load environment variables from .env
-#load_dotenv()
-
-# Retrieve the API key from the environment variable
-#deepseek_api_key = os.getenv("DEEPSEEK_API_KEY")
-#langchain_key = os.getenv("LANGCHAIN_API_KEY")
+# Set environment variables from Streamlit secrets
 deepseek_api_key = st.secrets["deepseek"]["key"]
 langchain_key = st.secrets["langchain"]["key"]
-# Check if the API key is set
+
+
+# Check if API keys are set
 if deepseek_api_key is None and langchain_key is None:
-    st.error("Error: DEEPSEEK_API_KEY environment variable not set.")
-    st.stop() # stops the app if there is no key
+    st.error("Error: API keys not found in secrets.")
+    st.stop()
 
-# Set it so that you are able to use in the python code in other file
-os.environ["LANGCHAIN_API_KEY"] = langchain_key
-os.environ["LANGCHAIN_TRACING_V2"] = "true"
-os.environ["LANGCHAIN_PROJECT"] = "SANITY_ANAYSIS"
-os.environ["DEEPSEEK_API_KEY"] = deepseek_api_key
+# Set environment variables
+os.environ.update({
+    "LANGCHAIN_API_KEY": langchain_key,
+    "LANGCHAIN_TRACING_V2": "true",
+    "LANGCHAIN_PROJECT": "SANITY_ANALYSIS",
+    "DEEPSEEK_API_KEY": deepseek_api_key,
+    "STREAMLIT_SERVER_MAX_UPLOAD_SIZE": str(MAX_UPLOAD_SIZE_MB)
+})
 
-# Rest of your code...
-os.environ["STREAMLIT_SERVER_MAX_UPLOAD_SIZE"] = "2000"
+# Configure Streamlit page
+st.set_page_config(**STREAMLIT_CONFIG)
 
-# Set Streamlit to wide mode
-st.set_page_config(layout="wide", page_title="Main Dashboard", page_icon="📊")
-
-
+# Load visualization agent page
 data_visualisation_page = st.Page(
-    "./Pages/python_visualization_agent.py", title="Data Visualisation", icon="📈"
+    "./Pages/python_visualization_agent.py",
+    title="Data Visualisation",
+    icon="📈"
 )
 
+# Set up navigation
 pg = st.navigation(
     {
         "Visualisation Agent": [data_visualisation_page]

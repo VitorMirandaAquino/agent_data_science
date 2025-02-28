@@ -1,7 +1,6 @@
 from langchain_core.tools import tool
 from langchain_experimental.utilities import PythonREPL
 
-from langchain_core.messages import AIMessage
 from typing import Annotated, Tuple
 from langgraph.prebuilt import InjectedState
 import sys
