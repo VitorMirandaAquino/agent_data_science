@@ -90,41 +90,39 @@ def complete_python_task(
 def create_visualization(
         graph_state: Annotated[dict, InjectedState], thought: str, python_code: str
 ) -> Tuple[str, dict]:
-    """Creates a single data visualization using Plotly.
+    """Creates a data visualization using Plotly.
 
     Args:
-        thought: Internal thought about why this specific visualization is needed and what it will show.
-        python_code: Python code that creates ONE Plotly figure. Must add the figure to plotly_figures list.
+        thought: Internal thought about the visualization being created.
+        python_code: Python code that creates Plotly figures. Must add figures to plotly_figures list.
     """
     # Check if this exact code was run before
     if "previous_viz_codes" not in persistent_vars:
-        persistent_vars["previous_viz_codes"] = set()
+        persistent_vars["previous_viz_codes"] = {}
     
-    # If we've seen this exact code before, prevent recreation
+    # If we've seen this exact code before, return the existing figure
     if python_code in persistent_vars["previous_viz_codes"]:
-        return "This visualization has already been created.", {
+        existing_file = persistent_vars["previous_viz_codes"][python_code]
+        return "This visualization already exists.", {
             "intermediate_outputs": [{
-                "thought": "Preventing duplicate visualization",
+                "thought": "Reusing existing visualization",
                 "code": python_code,
-                "output": "This exact visualization was already created before."
-            }]
+            }],
+            "output_image_paths": [existing_file]
         }
-    
-    # Add this code to the set of previous visualizations
-    persistent_vars["previous_viz_codes"].add(python_code)
-
-    # Retrieve or initialize the current variable state
-    current_variables = graph_state.get("current_variables", {})
-    for input_dataset in graph_state.get("input_data", []):
-        if input_dataset.variable_name not in current_variables:
-            current_variables[input_dataset.variable_name] = pd.read_csv(input_dataset.data_path)
-
-    # Create directory structure if it doesn't exist
-    os.makedirs("images/plotly_figures/pickle", exist_ok=True)
-
-    current_image_pickle_files = os.listdir("images/plotly_figures/pickle")
 
     try:
+        # Retrieve or initialize the current variable state
+        current_variables = graph_state.get("current_variables", {})
+        for input_dataset in graph_state.get("input_data", []):
+            if input_dataset.variable_name not in current_variables:
+                current_variables[input_dataset.variable_name] = pd.read_csv(input_dataset.data_path)
+
+        # Create directory structure if it doesn't exist
+        os.makedirs("images/plotly_figures/pickle", exist_ok=True)
+
+        current_image_pickle_files = os.listdir("images/plotly_figures/pickle")
+
         exec_globals = {
             'pd': pd,
             'np': np,
@@ -150,6 +148,10 @@ def create_visualization(
         new_image_folder_contents = os.listdir("images/plotly_figures/pickle")
         new_image_files = [file for file in new_image_folder_contents 
                          if file not in current_image_pickle_files]
+
+        if new_image_files:
+            # Store the code and file reference for future reuse
+            persistent_vars["previous_viz_codes"][python_code] = new_image_files[0]
 
         updated_state = {
             "intermediate_outputs": [{
