@@ -38,7 +38,5 @@ class FileService:
         """Get basic information about a file."""
         return {
             "name": file_path.name,
-            "size": file_path.stat().st_size,
-            "created": file_path.stat().st_ctime,
-            "modified": file_path.stat().st_mtime,
+            "size": file_path.stat().st_size
         } 

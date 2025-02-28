@@ -29,7 +29,7 @@ st.set_page_config(**STREAMLIT_CONFIG)
 
 # Load visualization agent page
 data_visualisation_page = st.Page(
-    "./Pages/python_visualization_agent.py",
+    "Pages/python_visualization_agent.py",
     title="Data Visualisation",
     icon="📈"
 )

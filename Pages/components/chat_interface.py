@@ -1,7 +1,7 @@
 import streamlit as st
 from langchain_core.messages import HumanMessage, AIMessage
-from ..backend import PythonChatbot, InputData
-from ..config import CHAT_CONTAINER_HEIGHT, UPLOADS_DIR
+from Pages.backend import PythonChatbot, InputData
+from Pages.config import UPLOADS_DIR, CHAT_CONTAINER_HEIGHT
 from pathlib import Path
 
 def render_chat_interface():

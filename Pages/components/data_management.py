@@ -1,6 +1,7 @@
 import streamlit as st
-from ..services.file_service import FileService
 from pathlib import Path
+from Pages.config import UPLOADS_DIR, ALLOWED_EXTENSIONS
+from Pages.services.file_service import FileService
 
 def render_data_management_tab():
     """Render the data management tab content."""
@@ -35,7 +36,7 @@ def render_data_management_tab():
             for tab, filename in zip(file_tabs, selected_files):
                 with tab:
                     try:
-                        file_path = Path(UPLOADS_DIR) / filename
+                        file_path = UPLOADS_DIR / filename
                         df = FileService.load_dataframe(file_path)
                         file_info = FileService.get_file_info(file_path)
                         

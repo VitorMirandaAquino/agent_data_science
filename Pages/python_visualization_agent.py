@@ -1,8 +1,8 @@
 import streamlit as st
-from .components.data_management import render_data_management_tab
-from .components.chat_interface import render_chat_interface
-from .components.debug_interface import render_debug_interface
-from .config import APP_TITLE
+from Pages.components.data_management import render_data_management_tab
+from Pages.components.chat_interface import render_chat_interface
+from Pages.components.debug_interface import render_debug_interface
+from Pages.config import APP_TITLE
 
 st.title(APP_TITLE)
 
