@@ -4,14 +4,13 @@ from typing import Annotated, Tuple
 from langgraph.prebuilt import InjectedState
 import sys
 from io import StringIO
-import os
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
-import plotly.io as pio
 import numpy as np
-import pickle
-import uuid
+from Pages.services import viz_manager
+from Pages.services.data_manager import DataManager
+from Pages.config import UPLOADS_DIR
 
 repl = PythonREPL()
 persistent_vars = {}
@@ -27,21 +26,28 @@ for figure in plotly_figures:
         pickle.dump(figure, f)
 """
 
+# Initialize managers
+data_manager = DataManager(UPLOADS_DIR)
+
 @tool(parse_docstring=True)
 def complete_python_task(
-        graph_state: Annotated[dict, InjectedState], thought: str, python_code: str
+        graph_state: Annotated[dict, InjectedState], 
+        thought: str, 
+        python_code: str
 ) -> Tuple[str, dict]:
-    """Executes a Python task for data analysis (without visualization).
+    """Execute Python code for data analysis.
 
     Args:
-        thought: Internal thought about what analysis needs to be done and why.
-        python_code: Python code for data analysis. Should use print() for outputs.
+        graph_state: The current state of the graph.
+        thought: The reasoning behind the analysis.
+        python_code: The Python code to execute.
+
+    Returns:
+        tuple: A tuple containing (output message, state updates)
     """
     # Retrieve or initialize the current variable state
-    current_variables = graph_state.get("current_variables", {})
     for input_dataset in graph_state.get("input_data", []):
-        if input_dataset.variable_name not in current_variables:
-            current_variables[input_dataset.variable_name] = pd.read_csv(input_dataset.data_path)
+        data_manager.load_dataset(input_dataset)
 
     try:
         # Capture standard output
@@ -52,29 +58,23 @@ def complete_python_task(
         exec_globals = {
             'pd': pd,
             'np': np,
-            **persistent_vars,
-            **current_variables
+            **data_manager.get_all_variables()
         }
 
-        # Execute the provided code
+        # Execute the code
         exec(python_code, exec_globals)
-        persistent_vars.update({k: v for k, v in exec_globals.items() if k not in globals()})
 
         # Get captured output
         output = sys.stdout.getvalue()
         sys.stdout = old_stdout
 
-        updated_state = {
+        return output, {
             "intermediate_outputs": [{
                 "thought": thought,
                 "code": python_code,
                 "output": output
-            }],
-            "current_variables": persistent_vars,
-            "output_image_paths": []
+            }]
         }
-
-        return output, updated_state
 
     except Exception as e:
         return str(e), {
@@ -82,27 +82,31 @@ def complete_python_task(
                 "thought": thought,
                 "code": python_code,
                 "output": str(e)
-            }],
-            "output_image_paths": []
+            }]
         }
 
 @tool(parse_docstring=True)
 def create_visualization(
-        graph_state: Annotated[dict, InjectedState], thought: str, python_code: str
+        graph_state: Annotated[dict, InjectedState], 
+        thought: str, 
+        python_code: str
 ) -> Tuple[str, dict]:
-    """Creates a data visualization using Plotly.
+    """Create a Plotly visualization.
 
     Args:
-        thought: Internal thought about the visualization being created.
-        python_code: Python code that creates Plotly figures. Must add figures to plotly_figures list.
+        graph_state: The current state of the graph.
+        thought: The reasoning behind the visualization.
+        python_code: The Python code that creates the Plotly figure.
+
+    Returns:
+        tuple: A tuple containing (output message, state updates)
     """
-    # Check if this exact code was run before
-    if "previous_viz_codes" not in persistent_vars:
-        persistent_vars["previous_viz_codes"] = {}
+    # Load data
+    for input_dataset in graph_state.get("input_data", []):
+        data_manager.load_dataset(input_dataset)
     
-    # If we've seen this exact code before, return the existing figure
-    if python_code in persistent_vars["previous_viz_codes"]:
-        existing_file = persistent_vars["previous_viz_codes"][python_code]
+    # Check for existing visualization
+    if existing_file := viz_manager.exists(python_code):
         return "This visualization already exists.", {
             "intermediate_outputs": [{
                 "thought": "Reusing existing visualization",
@@ -112,57 +116,32 @@ def create_visualization(
         }
 
     try:
-        # Retrieve or initialize the current variable state
-        current_variables = graph_state.get("current_variables", {})
-        for input_dataset in graph_state.get("input_data", []):
-            if input_dataset.variable_name not in current_variables:
-                current_variables[input_dataset.variable_name] = pd.read_csv(input_dataset.data_path)
-
-        # Create directory structure if it doesn't exist
-        os.makedirs("images/plotly_figures/pickle", exist_ok=True)
-
-        current_image_pickle_files = os.listdir("images/plotly_figures/pickle")
-
+        # Prepare execution globals
         exec_globals = {
             'pd': pd,
             'np': np,
             'px': px,
             'go': go,
             'plotly_figures': [],
-            **persistent_vars,
-            **current_variables
+            **data_manager.get_all_variables()
         }
 
-        # Execute the provided code
+        # Execute the code
         exec(python_code, exec_globals)
         
-        # Verify only one figure was created
-        if len(exec_globals['plotly_figures']) == 0:
+        if not exec_globals['plotly_figures']:
             raise ValueError("No figures were added to plotly_figures list")
-        if len(exec_globals['plotly_figures']) > 1:
-            raise ValueError("Only one figure should be created at a time")
-            
-        exec(plotly_saving_code, exec_globals)
         
-        # Check for new images
-        new_image_folder_contents = os.listdir("images/plotly_figures/pickle")
-        new_image_files = [file for file in new_image_folder_contents 
-                         if file not in current_image_pickle_files]
-
-        if new_image_files:
-            # Store the code and file reference for future reuse
-            persistent_vars["previous_viz_codes"][python_code] = new_image_files[0]
-
-        updated_state = {
+        # Save the figure using the manager
+        filename = viz_manager.save_figure(exec_globals['plotly_figures'][0], python_code)
+        
+        return "Visualization created successfully", {
             "intermediate_outputs": [{
                 "thought": thought,
                 "code": python_code,
             }],
-            "current_variables": persistent_vars,
-            "output_image_paths": new_image_files
+            "output_image_paths": [filename]
         }
-        
-        return "Visualization created successfully", updated_state
 
     except Exception as e:
         return str(e), {

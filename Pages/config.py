@@ -3,34 +3,16 @@ from pathlib import Path
 import shutil
 import time
 
-# Base paths
+# Get the base directory (where your main.py is located)
 BASE_DIR = Path(__file__).parent.parent
+
+# Define all directory paths
 UPLOADS_DIR = BASE_DIR / "uploads"
-PROMPTS_DIR = BASE_DIR / "Pages" / "prompts"
 FIGURES_DIR = BASE_DIR / "images" / "plotly_figures" / "pickle"
 
-# Clean up figures directory
-def clean_figures_directory():
-    try:
-        # Create directories if they don't exist
-        FIGURES_DIR.parent.mkdir(parents=True, exist_ok=True)
-        FIGURES_DIR.mkdir(exist_ok=True)
-        
-        # Remove individual files instead of the whole directory
-        if FIGURES_DIR.exists():
-            for file in FIGURES_DIR.glob("*"):
-                try:
-                    if file.is_file():
-                        file.unlink(missing_ok=True)
-                except Exception as e:
-                    print(f"Could not remove file {file}: {e}")
-                    
-    except Exception as e:
-        print(f"Error managing figures directory: {e}")
-
-# Clean up figures and ensure directories exist
-clean_figures_directory()
-UPLOADS_DIR.mkdir(exist_ok=True)
+# Create necessary directories
+UPLOADS_DIR.mkdir(parents=True, exist_ok=True)
+FIGURES_DIR.mkdir(parents=True, exist_ok=True)
 
 # App settings
 APP_TITLE = "Data Analysis Dashboard"
@@ -54,4 +36,47 @@ MODEL_CONFIG = {
 }
 
 # Chat settings
-CHAT_CONTAINER_HEIGHT = 500 
+CHAT_CONTAINER_HEIGHT = 400
+
+# Add visualization settings
+VIZ_SETTINGS = {
+    "max_figures_per_session": 50,
+    "figure_width": "100%",
+    "cache_figures": True
+}
+
+# Add data settings
+DATA_SETTINGS = {
+    "max_file_size_mb": 100,
+    "allowed_extensions": [".csv"],
+    "encoding": "utf-8"
+}
+
+# Make sure to export all necessary variables
+__all__ = [
+    'BASE_DIR',
+    'UPLOADS_DIR',
+    'FIGURES_DIR',
+    'CHAT_CONTAINER_HEIGHT'
+]
+
+# Ensure all required directories exist
+def ensure_directories():
+    """Ensure all required directories exist."""
+    directories = [UPLOADS_DIR, FIGURES_DIR]
+    for directory in directories:
+        directory.mkdir(parents=True, exist_ok=True)
+
+# Clean up and recreate figures directory
+def clean_figures_directory():
+    """Clean up the figures directory."""
+    if FIGURES_DIR.exists():
+        for file in FIGURES_DIR.glob("*.pickle"):
+            try:
+                file.unlink()
+            except Exception as e:
+                print(f"Could not remove file {file}: {e}")
+
+# Initialize directories
+ensure_directories()
+clean_figures_directory() 
