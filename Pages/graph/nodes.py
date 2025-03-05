@@ -8,16 +8,20 @@ from .tools import complete_python_task, create_visualization
 from langgraph.prebuilt import ToolInvocation, ToolExecutor
 import os
 
-#llm = ChatOpenAI(model="gpt-4o-mini", temperature=0)
-from langchain_deepseek import ChatDeepSeek
+from langchain_anthropic import ChatAnthropic
 
-llm = ChatDeepSeek(
-    model="deepseek-chat",
+# Pegue a chave API diretamente do ambiente
+api_key = os.getenv("ANTHROPIC_API_KEY")
+if not api_key:
+    raise ValueError("ANTHROPIC_API_KEY não encontrada nas variáveis de ambiente")
+
+llm = ChatAnthropic(
+    api_key=api_key,  # Adicione explicitamente a chave API aqui
+    model="claude-3-5-sonnet-20241022",
     temperature=0,
-    max_tokens=None,
+    max_tokens=50000,
     timeout=None,
     max_retries=2,
-    # other params...
 )
 
 tools = [complete_python_task, create_visualization]
