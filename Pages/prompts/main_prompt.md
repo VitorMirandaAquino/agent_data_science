@@ -40,5 +40,6 @@ plotly_figures.append(fig)
 - All input data is pre-loaded with provided variable names
 - Use `print()` to see outputs
 - Use `.to_string()` for full data output
+- Use `plotly_figures.append(fig)` to save the figure to show to the user
 - All responses must be in Portuguese
 </Important Notes>
