@@ -36,7 +36,7 @@ MODEL_CONFIG = {
 }
 
 # Chat settings
-CHAT_CONTAINER_HEIGHT = 400
+CHAT_CONTAINER_HEIGHT = 650
 
 # Add visualization settings
 VIZ_SETTINGS = {

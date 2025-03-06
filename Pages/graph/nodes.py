@@ -10,10 +10,8 @@ import os
 
 from langchain_anthropic import ChatAnthropic
 
-
-
 llm = ChatAnthropic(
-    model="claude-3-5-sonnet-20241022",
+    model="claude-3-5-haiku-20241022",
     temperature=0,
     max_tokens=8192,
     timeout=None,

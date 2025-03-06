@@ -22,7 +22,7 @@ def render_chat_interface():
                 if isinstance(msg, HumanMessage):
                     st.chat_message("You").markdown(msg.content)
                 elif isinstance(msg, AIMessage):
-                    if 'tool_calls' not in msg.additional_kwargs:
+                    if msg.response_metadata['stop_reason'] != 'tool_use':
                         st.chat_message("AI").markdown(msg.content)
                     
                     # Display plots
