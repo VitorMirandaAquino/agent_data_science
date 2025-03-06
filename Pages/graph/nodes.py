@@ -10,16 +10,12 @@ import os
 
 from langchain_anthropic import ChatAnthropic
 
-# Pegue a chave API diretamente do ambiente
-api_key = os.getenv("ANTHROPIC_API_KEY")
-if not api_key:
-    raise ValueError("ANTHROPIC_API_KEY não encontrada nas variáveis de ambiente")
+
 
 llm = ChatAnthropic(
-    api_key=api_key,  # Adicione explicitamente a chave API aqui
     model="claude-3-5-sonnet-20241022",
     temperature=0,
-    max_tokens=50000,
+    max_tokens=8192,
     timeout=None,
     max_retries=2,
 )
